@@ -1,0 +1,56 @@
+#!/usr/bin/ksh
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# DBG=ON
+[[ -f $REP_CMD/PROFILE_SIMAP2 ]] || exit 1
+. $REP_CMD/PROFILE_SIMAP2
+
+# Override ThisLog
+  rm -f $ThisLog
+  P1=${1:-NotSet}
+  P2=${2:-NotSet}
+  p3="${3:-NotSet}"
+  
+  if [ $p3 != 'DEACT_SAMPLE' ]
+  then
+      P3=`echo "$p3" | tr -d "_<.>@"`
+  else
+      P3=$p3;
+  fi
+ 
+
+  #P3=`echo "$p3" | tr -d "_<.>@"`
+  ThisLog=$DB_DirLog/`basename $ThisExe .ksh`_${P1}_${P2}_${P3}.log
+  > $ThisLog
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  main()
+  fTmp=$DB_DirTmp/$MyPid.IndicAuto
+  [[ $# -ne 3 ]] && Exit ERR_NbParam "Nb param($#) != 3 (Usage : $ThisExe freq plant typeIndic)"
+  SetTime t0
+ 
+  if [ $P3 != 'DEACT_SAMPLE' ]
+  then
+      P3=`echo "$p3" | tr "_" " "`
+  else
+      P3=$p3;
+  fi
+  
+  #P3=`echo "$p3" | tr "_" " "`
+  
+  Echo "Program started : freq($P1) plant($P2) typeIndic=($P3)"
+
+# Beware : P3 may contains spaces. That's why it is quoted like "'xx'"
+  #CallSql IndicAuto "'$P1'" "'$P2'" "'$P3'" > $fTmp
+
+  TraiteErr $? $fTmp CallSql IndicAuto \'$P1\' \'$P2\' \'$P3\'            \
+  || Exit ERR_EexcSql "CallSql IndicAuto '$P1' '$P2' '$P3' return $?"
+
+  SetTime deltaT
+
+  Exit NOERROR "'$P1' '$P2' '$P3' terminated."
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
